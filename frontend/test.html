@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Forecasting API Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .card {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+        .status {
+            padding: 10px;
+            border-radius: 4px;
+            margin: 10px 0;
+        }
+        .success { background-color: #d4edda; color: #155724; }
+        .info { background-color: #d1ecf1; color: #0c5460; }
+        button {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover { background: #0056b3; }
+        pre { background: #f8f9fa; padding: 10px; border-radius: 4px; overflow-x: auto; }
+    </style>
+</head>
+<body>
+    <h1>Time Series Forecasting API Test</h1>
+    
+    <div class="card">
+        <h2>API Status</h2>
+        <div id="status" class="status info">Checking...</div>
+    </div>
+    
+    <div class="card">
+        <h2>Available States</h2>
+        <div id="states">Loading...</div>
+        <button onclick="trainModels()">Train Models</button>
+    </div>
+    
+    <div class="card">
+        <h2>Model Comparison</h2>
+        <div id="models">Loading...</div>
+    </div>
+    
+    <div class="card">
+        <h2>Forecast Test</h2>
+        <select id="stateSelect">
+            <option value="">Select a state...</option>
+        </select>
+        <button onclick="getForecast()">Get Forecast</button>
+        <div id="forecast"></div>
+    </div>
+
+    <script>
+        const API_BASE = 'http://localhost:8000';
+        
+        async function checkStatus() {
+            try {
+                const response = await fetch(`${API_BASE}/`);
+                const data = await response.json();
+                document.getElementById('status').innerHTML = `
+                    <div class="success">
+                        <strong>Status:</strong> ${data.status}<br>
+                        <strong>Models Trained:</strong> ${data.models_trained ? 'Yes' : 'No'}<br>
+                        <strong>Available States:</strong> ${data.available_states}
+                    </div>
+                `;
+            } catch (error) {
+                document.getElementById('status').innerHTML = `<div class="error">Error: ${error.message}</div>`;
+            }
+        }
+        
+        async function loadStates() {
+            try {
+                const response = await fetch(`${API_BASE}/states`);
+                const data = await response.json();
+                const select = document.getElementById('stateSelect');
+                select.innerHTML = '<option value="">Select a state...</option>';
+                data.states.forEach(state => {
+                    select.innerHTML += `<option value="${state}">${state}</option>`;
+                });
+                document.getElementById('states').innerHTML = `<strong>Total States:</strong> ${data.states.length}`;
+            } catch (error) {
+                document.getElementById('states').innerHTML = `Error: ${error.message}`;
+            }
+        }
+        
+        async function trainModels() {
+            try {
+                document.getElementById('status').innerHTML = '<div class="info">Training models... This may take a few minutes.</div>';
+                const response = await fetch(`${API_BASE}/train`, { method: 'POST' });
+                const data = await response.json();
+                document.getElementById('status').innerHTML = `
+                    <div class="success">
+                        <strong>Training Complete!</strong><br>
+                        ${data.message}
+                    </div>
+                `;
+                loadStates();
+                loadModels();
+            } catch (error) {
+                document.getElementById('status').innerHTML = `<div class="error">Error: ${error.message}</div>`;
+            }
+        }
+        
+        async function loadModels() {
+            try {
+                const response = await fetch(`${API_BASE}/models`);
+                const data = await response.json();
+                let html = '<table border="1" style="width:100%; border-collapse: collapse;">';
+                html += '<tr><th>Model</th><th>RMSE</th><th>MAE</th><th>MAPE</th><th>Status</th></tr>';
+                data.model_comparison.forEach(model => {
+                    html += `<tr>
+                        <td>${model.model}</td>
+                        <td>${model.rmse.toFixed(2)}</td>
+                        <td>${model.mae.toFixed(2)}</td>
+                        <td>${model.mape.toFixed(2)}%</td>
+                        <td>${model.status}</td>
+                    </tr>`;
+                });
+                html += '</table>';
+                document.getElementById('models').innerHTML = html;
+            } catch (error) {
+                document.getElementById('models').innerHTML = `Error: ${error.message}`;
+            }
+        }
+        
+        async function getForecast() {
+            const state = document.getElementById('stateSelect').value;
+            if (!state) {
+                alert('Please select a state');
+                return;
+            }
+            
+            try {
+                const response = await fetch(`${API_BASE}/forecast/${state}`);
+                const data = await response.json();
+                
+                let html = `<h3>Forecast for ${state}</h3>`;
+                html += `<p><strong>Best Model:</strong> ${data.best_model}</p>`;
+                html += `<p><strong>RMSE:</strong> ${data.metrics.RMSE.toFixed(4)}</p>`;
+                html += `<h4>Next 8 Weeks Forecast:</h4>`;
+                html += '<table border="1" style="width:100%; border-collapse: collapse;">';
+                html += '<tr><th>Week</th><th>Date</th><th>Predicted Sales</th></tr>';
+                
+                data.forecast.slice(0, 8).forEach((item, index) => {
+                    html += `<tr>
+                        <td>${item.week}</td>
+                        <td>${item.date}</td>
+                        <td>$${item.predicted_sales.toLocaleString()}</td>
+                    </tr>`;
+                });
+                html += '</table>';
+                
+                document.getElementById('forecast').innerHTML = html;
+            } catch (error) {
+                document.getElementById('forecast').innerHTML = `Error: ${error.message}`;
+            }
+        }
+        
+        // Initialize
+        checkStatus();
+        loadStates();
+        loadModels();
+    </script>
+</body>
+</html>
