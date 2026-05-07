@@ -43,11 +43,11 @@ const ForecastChart = ({ data, state, model }) => {
   // Format numbers for display
   const formatSales = (value) => {
     if (value >= 1000000) {
-      return `$${(value / 1000000).toFixed(1)}M`;
+      return `$${(value / 1000000).toFixed(2)}M`;
     } else if (value >= 1000) {
-      return `$${(value / 1000).toFixed(0)}K`;
+      return `$${(value / 1000).toFixed(2)}K`;
     }
-    return `$${value.toFixed(0)}`;
+    return `$${value.toFixed(2)}`;
   };
 
   // Download CSV
@@ -95,14 +95,20 @@ const ForecastChart = ({ data, state, model }) => {
           <AreaChart data={chartData}>
             <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
             <XAxis 
-              dataKey="week" 
-              tick={{ fontSize: 12 }}
+              dataKey="date" 
+              tick={{ fontSize: 10 }}
               tickLine={{ stroke: '#e0e0e0' }}
+              tickFormatter={(date) => {
+                const d = new Date(date);
+                return `${d.getMonth()+1}/${d.getDate()}`;
+              }}
             />
             <YAxis 
               tickFormatter={formatSales}
               tick={{ fontSize: 12 }}
               tickLine={{ stroke: '#e0e0e0' }}
+              domain={['auto', 'auto']}
+              allowDataOverflow={false}
             />
             <Tooltip content={<CustomTooltip />} />
             <Legend />
@@ -149,14 +155,20 @@ const ForecastChart = ({ data, state, model }) => {
         <LineChart data={chartData}>
           <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
           <XAxis 
-            dataKey="week" 
-            tick={{ fontSize: 12 }}
+            dataKey="date" 
+            tick={{ fontSize: 10 }}
             tickLine={{ stroke: '#e0e0e0' }}
+            tickFormatter={(date) => {
+              const d = new Date(date);
+              return `${d.getMonth()+1}/${d.getDate()}`;
+            }}
           />
           <YAxis 
             tickFormatter={formatSales}
             tick={{ fontSize: 12 }}
             tickLine={{ stroke: '#e0e0e0' }}
+            domain={['auto', 'auto']}
+            allowDataOverflow={false}
           />
           <Tooltip content={<CustomTooltip />} />
           <Legend />

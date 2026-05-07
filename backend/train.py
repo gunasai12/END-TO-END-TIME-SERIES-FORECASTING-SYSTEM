@@ -257,22 +257,45 @@ class ModelTrainer:
         return summary
     
     def save_results(self, output_path: str = "results"):
-        """Save training results"""
+        """Save training results, removing heavy model objects for LFS compatibility"""
         import os
         import joblib
         import json
         
         os.makedirs(output_path, exist_ok=True)
         
-        # Save results
-        joblib.dump(self.results, os.path.join(output_path, "training_results.pkl"))
+        # Create a light version of the results without the actual model objects
+        light_model_results = {}
+        for state, state_data in self.results.items():
+            if 'error' in state_data:
+                light_model_results[state] = state_data
+                continue
+                
+            light_state_data = {}
+            for key, value in state_data.items():
+                if key == 'best_model':
+                    light_state_data[key] = value
+                else:
+                    # Strip the actual 'model' object if it exists
+                    if isinstance(value, dict):
+                        light_model_result = value.copy()
+                        if 'model' in light_model_result:
+                            del light_model_result['model']
+                        light_state_data[key] = light_model_result
+                    else:
+                        light_state_data[key] = value
+            light_model_results[state] = light_state_data
+
+        # Save light results
+        joblib.dump(light_model_results, os.path.join(output_path, "training_results.pkl"))
         
         # Save summary
         summary = self.get_summary_statistics()
         with open(os.path.join(output_path, "summary.json"), 'w') as f:
             json.dump(summary, f, indent=2, default=str)
         
-        print(f"Results saved to {output_path}")
+        print(f"Results saved to {output_path} (Model objects stripped for efficiency)")
+
 
 def main():
     """Main training function"""

@@ -54,7 +54,8 @@ export const apiService = {
   // Train models
   trainModels: async (maxStates = 5) => {
     return await api.post('/train', null, {
-      params: { max_states: maxStates }
+      params: { max_states: maxStates },
+      timeout: 600000 // 10 minutes for training
     });
   },
 
@@ -75,8 +76,10 @@ export const apiService = {
   },
 
   // Get model comparison
-  getModelComparison: async () => {
-    return await api.get('/models');
+  getModelComparison: async (state = null) => {
+    return await api.get('/models', {
+      params: { state }
+    });
   },
 
   // Get training summary

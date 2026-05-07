@@ -43,11 +43,11 @@ const ModelComparison = ({ data }) => {
   // Format RMSE values for display
   const formatRMSE = (value) => {
     if (value >= 1000000) {
-      return `${(value / 1000000).toFixed(1)}M`;
+      return `${(value / 1000000).toFixed(2)}M`;
     } else if (value >= 1000) {
-      return `${(value / 1000).toFixed(0)}K`;
+      return `${(value / 1000).toFixed(2)}K`;
     }
-    return value.toFixed(0);
+    return value.toFixed(2);
   };
 
   // Custom tooltip
@@ -59,10 +59,10 @@ const ModelComparison = ({ data }) => {
           <p className="font-medium text-gray-900 mb-2">{data.model}</p>
           <div className="space-y-1">
             <p className="text-sm text-gray-600">
-              RMSE: <span className="font-medium text-gray-900">{data.rmse.toLocaleString()}</span>
+              RMSE: <span className="font-medium text-gray-900">{data.rmse.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
             </p>
             <p className="text-sm text-gray-600">
-              MAE: <span className="font-medium text-gray-900">{data.mae.toLocaleString()}</span>
+              MAE: <span className="font-medium text-gray-900">{data.mae.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
             </p>
             <p className="text-sm text-gray-600">
               MAPE: <span className="font-medium text-gray-900">{data.mape.toFixed(2)}%</span>
@@ -161,10 +161,10 @@ const ModelComparison = ({ data }) => {
                   </div>
                 </td>
                 <td className="px-3 py-2 whitespace-nowrap text-sm text-gray-900">
-                  {model.rmse.toLocaleString()}
+                  {formatRMSE(model.rmse)}
                 </td>
                 <td className="px-3 py-2 whitespace-nowrap text-sm text-gray-900">
-                  {model.mae.toLocaleString()}
+                  {formatRMSE(model.mae)}
                 </td>
                 <td className="px-3 py-2 whitespace-nowrap text-sm text-gray-900">
                   {model.mape.toFixed(2)}%

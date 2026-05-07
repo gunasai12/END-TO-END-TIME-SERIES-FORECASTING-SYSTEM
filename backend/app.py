@@ -269,14 +269,48 @@ async def get_state_forecast(state: str, days: int = 56):
         raise HTTPException(status_code=500, detail=f"Forecast retrieval failed: {str(e)}")
 
 @app.get("/models")
-async def get_model_comparison():
+async def get_model_comparison(state: Optional[str] = None):
     """Get model comparison metrics"""
     try:
         if not training_results:
             raise HTTPException(status_code=400, detail="Models not trained. Call /train first.")
         
-        # Aggregate model performance across all states
+        # If state is provided, return metrics only for that state
+        if state:
+            if state not in training_results['model_results']:
+                raise HTTPException(status_code=404, detail=f"No results for state {state}")
+            
+            state_results = training_results['model_results'][state]
+            comparison = []
+            
+            for model_name, model_data in state_results.items():
+                if model_name == 'best_model' or 'error' in state_results:
+                    continue
+                
+                if 'metrics' in model_data:
+                    metrics = model_data['metrics']
+                    comparison.append({
+                        "model": model_name,
+                        "rmse": round(metrics['RMSE'], 2),
+                        "mae": round(metrics['MAE'], 2),
+                        "mape": round(metrics['MAPE'], 2),
+                        "status": "Trained"
+                    })
+            
+            # Sort by RMSE
+            comparison.sort(key=lambda x: x['rmse'])
+            if comparison:
+                comparison[0]['status'] = "Best"
+            
+            return {
+                "model_comparison": comparison,
+                "state": state,
+                "best_model": state_results['best_model']['name']
+            }
+
+        # Otherwise, aggregate model performance across all states
         model_performance = {}
+
         
         for state, state_results in training_results['model_results'].items():
             if 'error' in state_results:

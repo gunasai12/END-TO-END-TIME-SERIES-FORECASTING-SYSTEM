@@ -62,20 +62,26 @@ function App() {
 
   const loadExistingData = async () => {
     try {
-      const [statesData, comparisonData, summaryData] = await Promise.all([
+      const [statesData, summaryData] = await Promise.all([
         apiService.getStates(),
-        apiService.getModelComparison(),
         apiService.getSummary()
       ]);
       
       setStates(statesData.states);
-      setModelComparison(comparisonData);
       setTrainingSummary(summaryData.training_summary);
       
-      // Select first state by default
+      // Select first state by default and load its specific data
       if (statesData.states.length > 0) {
-        setSelectedState(statesData.states[0]);
-        await loadForecastData(statesData.states[0]);
+        const initialState = statesData.states[0];
+        setSelectedState(initialState);
+        
+        const [forecast, comparison] = await Promise.all([
+          apiService.getForecast(initialState),
+          apiService.getModelComparison(initialState)
+        ]);
+        
+        setForecastData(forecast);
+        setModelComparison(comparison);
       }
       
     } catch (err) {
@@ -88,7 +94,7 @@ function App() {
       setTraining(true);
       setError('');
       
-      const result = await apiService.trainModels(5); // Train for 5 states
+      const result = await apiService.trainModels(50); // Train for all states (up to 50)
       
       // Reload data after training
       await loadExistingData();
@@ -103,8 +109,21 @@ function App() {
 
   const handleStateSelect = async (state) => {
     setSelectedState(state);
-    await loadForecastData(state);
+    await Promise.all([
+      loadForecastData(state),
+      loadStateModelComparison(state)
+    ]);
   };
+
+  const loadStateModelComparison = async (state) => {
+    try {
+      const comparisonData = await apiService.getModelComparison(state);
+      setModelComparison(comparisonData);
+    } catch (err) {
+      console.error('Error loading state model comparison:', err);
+    }
+  };
+
 
   const loadForecastData = async (state) => {
     try {
@@ -228,9 +247,14 @@ function App() {
           </div>
         </div>
 
-        {/* API Display */}
+
+        {/* API Integration */}
         {selectedState && forecastData && (
-          <div className="mt-8">
+          <div className="mt-8 border-t border-gray-200 dark:border-gray-700 pt-8">
+            <div className="flex items-center space-x-2 mb-6">
+              <div className="h-6 w-1 bg-primary-600 rounded-full"></div>
+              <h2 className="text-xl font-bold text-gray-900 dark:text-white">API Integration</h2>
+            </div>
             <APIDisplay 
               state={selectedState}
               sampleRequest={{

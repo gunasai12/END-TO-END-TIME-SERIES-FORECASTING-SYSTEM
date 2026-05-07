@@ -1,15 +1,16 @@
 {
-  "total_states": 5,
-  "successful_states": 5,
+  "total_states": 43,
+  "successful_states": 43,
   "model_performance": {
-    "avg_rmse": 0.1351125229092385,
-    "avg_mae": 0.08200110639594976,
-    "avg_mape": 61191923.76729554,
-    "std_rmse": 0.006601633928651707,
-    "min_rmse": 0.1275131893742443,
-    "max_rmse": 0.1431791076260437
+    "avg_rmse": 5586117.4002335835,
+    "avg_mae": 3720958.068012751,
+    "avg_mape": 1.6756698522710736,
+    "std_rmse": 6041384.497103154,
+    "min_rmse": 339622.1200583047,
+    "max_rmse": 31200803.07802452
   },
   "best_models_count": {
-    "LSTM": 5
+    "LSTM": 32,
+    "XGBoost": 11
   }
 }
