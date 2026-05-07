@@ -1,0 +1,15 @@
+{
+  "total_states": 5,
+  "successful_states": 5,
+  "model_performance": {
+    "avg_rmse": 0.14221428401427824,
+    "avg_mae": 0.08976492390298917,
+    "avg_mape": 63891337.27447401,
+    "std_rmse": 0.004083708700653576,
+    "min_rmse": 0.13770954493652696,
+    "max_rmse": 0.1496308995585265
+  },
+  "best_models_count": {
+    "LSTM": 5
+  }
+}
