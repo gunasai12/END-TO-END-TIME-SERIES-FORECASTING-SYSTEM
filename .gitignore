@@ -1,11 +1,11 @@
-# Frontend
-node_modules/
+# Frontend dependencies
+frontend/node_modules/
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 
-# Python
-__pycache__/
+# Python environment and cache
+backend/__pycache__/
 *.pyc
 *.pyo
 *.pyd
@@ -14,29 +14,18 @@ env/
 venv/
 .venv/
 pip-log.txt
-pip-delete-this-directory.txt
 .tox/
 .coverage
-.coverage.*
 .cache
-nosetests.xml
-coverage.xml
-*.cover
-*.log
-.git
-.mypy_cache
 .pytest_cache
-.hypothesis
 
-# OS
+# OS files
 .DS_Store
 Thumbs.db
 
-# IDE
+# IDE files
 .vscode/
 .idea/
 
-# Data and models (large files)
-data/
-saved_models/
-results/
+# Large files (tracked by LFS)
+# We are NOT ignoring data, saved_models, and results anymore as per user request
